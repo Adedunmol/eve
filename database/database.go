@@ -9,11 +9,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// type DbInstance struct {
-// 	Db *gorm.DB
-// }
-
-func InitDb() (*gorm.DB, error) {
+func InitDB() (*gorm.DB, error) {
 	var err error
 
 	db, err := gorm.Open(postgres.Open(os.Getenv("DATABASE_URL")), &gorm.Config{})
