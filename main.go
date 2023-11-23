@@ -4,6 +4,8 @@ import (
 	"eve/database"
 	"fmt"
 	"log"
+	"net/http"
+	"time"
 
 	"github.com/joho/godotenv"
 	"gorm.io/gorm"
@@ -27,4 +29,12 @@ func main() {
 	dbClient := &DBClient{db: db}
 
 	fmt.Println("connection: ", dbClient)
+
+	srv := &http.Server{
+		Addr:         "127.0.0.1",
+		WriteTimeout: 15 * time.Second,
+		ReadTimeout:  15 * time.Second,
+	}
+
+	log.Fatal(srv.ListenAndServe())
 }
