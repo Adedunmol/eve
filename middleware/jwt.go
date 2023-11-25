@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"eve/util"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -28,9 +29,28 @@ func GenerateToken(username string) (string, error) {
 	return tokenString, nil
 }
 
-func DecodeToken(token string) bool {
+func DecodeToken(tokenString string) (string, error) {
+	var err error
 
-	return true
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+		}
+
+		return os.Getenv("SECRET_KEY"), nil
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+
+		return claims["username"].(string), nil
+	}
+
+	return "", err
 }
 
 func AuthMiddleware(handler http.Handler) http.Handler {
@@ -45,10 +65,14 @@ func AuthMiddleware(handler http.Handler) http.Handler {
 			return
 		}
 
-		isValid := DecodeToken(token)
+		username, err := DecodeToken(token)
+		if err != nil || username == "" {
+			util.RespondWithError(w, http.StatusUnauthorized, "Bad token")
+			return
+		}
 
 		handler.ServeHTTP(w, r)
 
-		log.Println(isValid)
+		log.Println(username)
 	})
 }
