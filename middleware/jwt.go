@@ -47,7 +47,7 @@ func DecodeToken(tokenString string) (string, error) {
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 
-		return claims["username"].(string), nil
+		return string(claims["username"].(string)), nil
 	}
 
 	return "", err
@@ -58,14 +58,20 @@ func AuthMiddleware(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		authHeader := r.Header.Get("Authorization")
-		token := strings.TrimPrefix(authHeader, "Bearer ")
 
-		if authHeader == "" || authHeader == token {
+		if authHeader == "" {
 			util.RespondWithError(w, http.StatusUnauthorized, "No auth token in the header")
 			return
 		}
 
-		username, err := DecodeToken(token)
+		tokenString := strings.Split(authHeader, " ")
+
+		if len(tokenString) != 2 {
+			util.RespondWithError(w, http.StatusUnauthorized, "Malformed token")
+			return
+		}
+
+		username, err := DecodeToken(tokenString[1])
 		if err != nil || username == "" {
 			util.RespondWithError(w, http.StatusUnauthorized, "Bad token")
 			return
