@@ -8,12 +8,7 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
-	"gorm.io/gorm"
 )
-
-type DBClient struct {
-	db *gorm.DB
-}
 
 func main() {
 	err := godotenv.Load()
@@ -26,12 +21,10 @@ func main() {
 		log.Fatal("An error occurred while connecting to db: ", err)
 	}
 
-	dbClient := &DBClient{db: db}
-
-	fmt.Println("connection: ", dbClient)
+	fmt.Println("connection: ", db)
 
 	srv := &http.Server{
-		Addr:         "127.0.0.1",
+		Addr:         "127.0.0.1:3500",
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}

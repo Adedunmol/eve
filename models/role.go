@@ -52,7 +52,7 @@ func InsertRoles() {
 
 	default_role := "User"
 	// for r := range roles {
-	// 	role := db
+	// 	role := database.Database.Db.
 	// }
 
 	fmt.Println(roles, default_role)
