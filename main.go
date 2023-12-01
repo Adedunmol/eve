@@ -2,6 +2,7 @@ package main
 
 import (
 	"eve/database"
+	"eve/util"
 	"fmt"
 	"log"
 	"net/http"
@@ -20,6 +21,8 @@ func main() {
 	if err != nil {
 		log.Fatal("An error occurred while connecting to db: ", err)
 	}
+
+	util.InsertRoles()
 
 	fmt.Println("connection: ", db)
 
