@@ -33,15 +33,26 @@ func InsertRoles() {
 
 		if result.Error != nil && result.Error == gorm.ErrRecordNotFound {
 			role = models.Role{Name: r}
+
+			exec_result := database.Database.Db.Create(&role)
+
+			if exec_result.Error != nil {
+
+			}
 		}
 		role.ResetPermissions()
+
+		fmt.Printf("before role: %v, perm: %v", role, role.Permissions)
 
 		for perm := range roles[r] {
 			role.AddPermission(uint8(perm))
 		}
+
+		fmt.Printf("after role: %v, perm: %v", role, role.Permissions)
+
 		role.Default = (role.Name == default_role)
 
-		database.Database.Db.Commit()
+		database.Database.Db.Save(role)
 	}
 
 	fmt.Println(roles, default_role)

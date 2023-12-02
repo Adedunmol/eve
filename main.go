@@ -24,13 +24,13 @@ func main() {
 
 	util.InsertRoles()
 
-	fmt.Println("connection: ", db)
-
 	srv := &http.Server{
 		Addr:         "127.0.0.1:3500",
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}
 
+	fmt.Println(db)
+	fmt.Printf("Server in running on port %v\n", srv.Addr)
 	log.Fatal(srv.ListenAndServe())
 }
