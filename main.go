@@ -11,7 +11,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func main() {
+func Initializers() database.DbInstance {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
@@ -23,6 +23,13 @@ func main() {
 	}
 
 	util.InsertRoles()
+
+	return db
+}
+
+func main() {
+
+	db := Initializers()
 
 	srv := &http.Server{
 		Addr:         "127.0.0.1:3500",

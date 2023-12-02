@@ -42,13 +42,9 @@ func InsertRoles() {
 		}
 		role.ResetPermissions()
 
-		fmt.Printf("before role: %v, perm: %v", role, role.Permissions)
-
-		for perm := range roles[r] {
+		for _, perm := range roles[r] {
 			role.AddPermission(uint8(perm))
 		}
-
-		fmt.Printf("after role: %v, perm: %v", role, role.Permissions)
 
 		role.Default = (role.Name == default_role)
 
