@@ -2,12 +2,15 @@ package main
 
 import (
 	"eve/database"
+	"eve/routes"
 	"eve/util"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"time"
 
+	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 )
 
@@ -27,14 +30,26 @@ func Initializers() database.DbInstance {
 	return db
 }
 
+func testHandler(w http.ResponseWriter, r *http.Request) {
+
+	io.WriteString(w, "Hello")
+}
+
 func main() {
 
 	db := Initializers()
+
+	r := mux.NewRouter()
+
+	r.HandleFunc("/", testHandler).Methods("GET")
+
+	r = routes.RoutesSetup(r)
 
 	srv := &http.Server{
 		Addr:         "127.0.0.1:3500",
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
+		Handler:      r,
 	}
 
 	fmt.Println(db)
