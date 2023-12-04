@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"fmt"
+	"eve/handlers"
 
 	"github.com/gorilla/mux"
 )
@@ -9,6 +9,5 @@ import (
 func UserRoutes(r *mux.Router) {
 	u := r.PathPrefix("/users").Subrouter()
 
-	fmt.Println(u)
-
+	u.HandleFunc("/register", handlers.CreateUserHandler).Methods("POST")
 }

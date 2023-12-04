@@ -41,15 +41,15 @@ func main() {
 
 	r := mux.NewRouter()
 
-	r.HandleFunc("/", testHandler).Methods("GET")
+	rNew := routes.RoutesSetup(r.PathPrefix("/api/v1").Subrouter())
 
-	r = routes.RoutesSetup(r)
+	rNew.HandleFunc("/", testHandler).Methods("GET")
 
 	srv := &http.Server{
 		Addr:         "127.0.0.1:3500",
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
-		Handler:      r,
+		Handler:      rNew,
 	}
 
 	fmt.Println(db)

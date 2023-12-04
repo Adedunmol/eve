@@ -9,6 +9,7 @@ type Role struct {
 	Name        string
 	Permissions uint8
 	Default     bool
+	Users       []User
 }
 
 func (r *Role) AddPermission(perm uint8) {
