@@ -7,6 +7,8 @@ import (
 	"eve/util"
 	"fmt"
 	"net/http"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
@@ -55,7 +57,15 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user := models.User{FirstName: userDto.FirstName, LastName: userDto.LastName, Password: userDto.Password, Username: userDto.Username, RoleID: role.ID}
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(userDto.Password), 14)
+
+	if err != nil {
+		fmt.Println("could not hash password", err)
+		util.RespondWithError(w, http.StatusInternalServerError, "could not hash password")
+		return
+	}
+
+	user := models.User{FirstName: userDto.FirstName, LastName: userDto.LastName, Password: string(hashedPassword), Username: userDto.Username, RoleID: role.ID}
 
 	result = database.Database.Db.Create(&user)
 
@@ -66,4 +76,8 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	util.RespondWithJSON(w, http.StatusCreated, APIResponse{Message: "", Data: user, Status: "success"})
+}
+
+func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
+
 }
