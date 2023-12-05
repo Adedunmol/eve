@@ -37,7 +37,7 @@ func InsertRoles() {
 			exec_result := database.Database.Db.Create(&role)
 
 			if exec_result.Error != nil {
-
+				fmt.Println("Unable to create role")
 			}
 		}
 		role.ResetPermissions()

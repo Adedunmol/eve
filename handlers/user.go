@@ -2,7 +2,10 @@ package handlers
 
 import (
 	"encoding/json"
+	"eve/database"
+	"eve/models"
 	"eve/util"
+	"fmt"
 	"net/http"
 )
 
@@ -13,9 +16,15 @@ type User struct {
 	Password  string `json:"password"`
 }
 
+type APIResponse struct {
+	Message string      `json:"message"`
+	Data    interface{} `json:"data"`
+	Status  string      `json:"status"`
+}
+
 func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
-	var user User
-	err := json.NewDecoder(r.Body).Decode(&user)
+	var userDto User
+	err := json.NewDecoder(r.Body).Decode(&userDto)
 
 	if _, ok := err.(*json.InvalidUnmarshalError); ok {
 		util.RespondWithError(w, http.StatusInternalServerError, "Unable to format the request body")
@@ -26,4 +35,35 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 		util.RespondWithError(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
+
+	var foundUser models.User
+
+	result := database.Database.Db.Where(models.User{Username: userDto.Username}).First(&foundUser)
+
+	if result.Error == nil {
+		util.RespondWithJSON(w, http.StatusConflict, APIResponse{Message: "username already exists", Data: nil, Status: "error"})
+		return
+	}
+
+	var role models.Role
+
+	result = database.Database.Db.Where(models.Role{Default: true}).First(&role)
+
+	if result.Error != nil {
+		fmt.Println("error looking for the role")
+		util.RespondWithError(w, http.StatusInternalServerError, "error looking a role")
+		return
+	}
+
+	user := models.User{FirstName: userDto.FirstName, LastName: userDto.LastName, Password: userDto.Password, Username: userDto.Username, RoleID: role.ID}
+
+	result = database.Database.Db.Create(&user)
+
+	if result.Error != nil {
+		fmt.Println(result.Error)
+		util.RespondWithJSON(w, http.StatusInternalServerError, APIResponse{Message: "error creating user", Data: nil, Status: "error"})
+		return
+	}
+
+	util.RespondWithJSON(w, http.StatusCreated, APIResponse{Message: "", Data: user, Status: "success"})
 }
