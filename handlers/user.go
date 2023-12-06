@@ -8,6 +8,7 @@ import (
 	"eve/util"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -54,9 +55,15 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	roleToAssign := r.URL.String()
+
 	var role models.Role
 
-	result = database.Database.Db.Where(models.Role{Default: true}).First(&role)
+	if strings.Contains(roleToAssign, "users") {
+		result = database.Database.Db.Where(models.Role{Default: true}).First(&role)
+	} else {
+		result = database.Database.Db.Where(models.Role{Name: "Event-Organizer"}).First(&role)
+	}
 
 	if result.Error != nil {
 		fmt.Println("error looking for the role")
