@@ -3,10 +3,12 @@ package handlers
 import (
 	"encoding/json"
 	"eve/database"
+	"eve/middleware"
 	"eve/models"
 	"eve/util"
 	"fmt"
 	"net/http"
+	"time"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -16,6 +18,11 @@ type User struct {
 	LastName  string `json:"last_name"`
 	Username  string `json:"username"`
 	Password  string `json:"password"`
+}
+
+type UserLoginDto struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
 type APIResponse struct {
@@ -79,5 +86,50 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
+	var userDto UserLoginDto
 
+	type Response struct {
+		Token      string        `json:"token"`
+		Expiration time.Duration `json:"expiration"`
+	}
+
+	err := json.NewDecoder(r.Body).Decode(&userDto)
+
+	if _, ok := err.(*json.InvalidUnmarshalError); ok {
+		util.RespondWithError(w, http.StatusInternalServerError, "Unable to format the request body")
+		return
+	}
+
+	if err != nil {
+		util.RespondWithError(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	var foundUser models.User
+
+	result := database.Database.Db.Where(models.User{Username: userDto.Username}).First(&foundUser)
+
+	if result.Error != nil {
+		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "user does not exist", Data: nil, Status: "error"})
+		return
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(foundUser.Password), []byte(userDto.Password))
+
+	if err != nil {
+		util.RespondWithJSON(w, http.StatusUnauthorized, APIResponse{Message: "Invalid credentials", Data: nil, Status: "error"})
+		return
+	}
+
+	token, err := middleware.GenerateToken(foundUser.Username)
+
+	if err != nil {
+		fmt.Println(err)
+		util.RespondWithError(w, http.StatusInternalServerError, "Unable to generate token")
+		return
+	}
+
+	data := Response{Token: token, Expiration: time.Duration(middleware.TOKEN_EXPIRATION.Seconds())}
+
+	util.RespondWithJSON(w, http.StatusCreated, APIResponse{Message: "", Data: data, Status: "success"})
 }

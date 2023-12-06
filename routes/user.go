@@ -10,4 +10,5 @@ func UserRoutes(r *mux.Router) {
 	u := r.PathPrefix("/users").Subrouter()
 
 	u.HandleFunc("/register", handlers.CreateUserHandler).Methods("POST")
+	u.HandleFunc("/login", handlers.LoginUserHandler).Methods("POST")
 }
