@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"eve/util"
 	"fmt"
 	"log"
@@ -79,7 +80,10 @@ func AuthMiddleware(handler http.Handler) http.Handler {
 			return
 		}
 
-		handler.ServeHTTP(w, r)
+		ctx := context.WithValue(r.Context(), "username", username)
+		newReq := r.WithContext(ctx)
+
+		handler.ServeHTTP(w, newReq)
 
 		log.Println(username)
 	})
