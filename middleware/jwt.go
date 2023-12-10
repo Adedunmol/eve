@@ -4,7 +4,6 @@ import (
 	"context"
 	"eve/util"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -18,9 +17,9 @@ const TOKEN_EXPIRATION = 15 * time.Minute
 func GenerateToken(username string) (string, error) {
 
 	claims := jwt.MapClaims{
-		"username":   username,
-		"Expiration": TOKEN_EXPIRATION,
-		"IssuedAt":   time.Now().Unix(),
+		"username": username,
+		"exp":      time.Now().Add(TOKEN_EXPIRATION).Unix(),
+		"IssuedAt": time.Now().Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -41,7 +40,7 @@ func DecodeToken(tokenString string) (string, error) {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}
 
-		return os.Getenv("SECRET_KEY"), nil
+		return []byte(os.Getenv("SECRET_KEY")), nil
 	})
 
 	if err != nil {
@@ -75,6 +74,7 @@ func AuthMiddleware(handler http.Handler) http.Handler {
 		}
 
 		username, err := DecodeToken(tokenString[1])
+		fmt.Println(username)
 		if err != nil || username == "" {
 			util.RespondWithError(w, http.StatusUnauthorized, "Bad token")
 			return
@@ -85,6 +85,5 @@ func AuthMiddleware(handler http.Handler) http.Handler {
 
 		handler.ServeHTTP(w, newReq)
 
-		log.Println(username)
 	})
 }
