@@ -141,3 +141,29 @@ func EventOrganizerRoute(handler http.Handler) http.Handler {
 		handler.ServeHTTP(w, r)
 	})
 }
+
+func RoleAuthorization(handler http.Handler, perm uint8) http.Handler {
+
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		username := r.Context().Value("username")
+		var foundUser models.User
+
+		result := database.Database.Db.Where(models.User{Username: username.(string)}).First(&foundUser)
+
+		if result.Error != nil {
+			util.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
+			return
+		}
+
+		var role models.Role
+
+		result = database.Database.Db.First(&role, foundUser.ID)
+
+		if !role.HasPermission(perm) {
+			util.RespondWithError(w, http.StatusForbidden, "Forbidden")
+			return
+		}
+
+		handler.ServeHTTP(w, r)
+	})
+}
