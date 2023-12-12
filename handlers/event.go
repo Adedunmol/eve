@@ -6,17 +6,16 @@ import (
 	"eve/util"
 	"fmt"
 	"net/http"
-	"time"
 )
 
 type CreateEventDto struct {
-	Name     string    `json:"name"`
-	About    string    `json:"about"`
-	Tickets  int       `json:"tickets"`
-	Price    int       `json:"price"`
-	Location string    `json:"location"`
-	Category string    `json:"category"`
-	Date     time.Time `json:"date"`
+	Name     string `json:"name"`
+	About    string `json:"about"`
+	Tickets  int    `json:"tickets"`
+	Price    int    `json:"price"`
+	Location string `json:"location"`
+	Category string `json:"category"`
+	// Date     time.Time `json:"date"`
 }
 
 func CreateEventHandler(w http.ResponseWriter, r *http.Request) {

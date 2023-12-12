@@ -148,6 +148,7 @@ func RoleAuthorization(handler http.Handler, perm uint8) http.Handler {
 		username := r.Context().Value("username")
 		var foundUser models.User
 
+		fmt.Println("username: ", username)
 		result := database.Database.Db.Where(models.User{Username: username.(string)}).First(&foundUser)
 
 		if result.Error != nil {
