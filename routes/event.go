@@ -11,7 +11,8 @@ import (
 
 func EventRoutes(r *mux.Router) {
 	u := r.PathPrefix("/events").Subrouter()
+	// eventOrganizerChain := alice.New(middleware.AuthMiddleware, middleware.EventOrganizerRoute).Then(http.HandlerFunc(handlers.CreateEventHandler))
+	// u.Handle("/", eventOrganizerChain).Methods("POST")
+	u.Handle("/", middleware.AuthMiddleware(middleware.RoleAuthorization(http.HandlerFunc(handlers.CreateEventHandler), util.CREATE_EVENT))).Methods("POST")
 
-	// u.Handle("/", middleware.AuthMiddleware(http.HandlerFunc(handlers.CreateEventHandler))).Methods("POST")
-	u.Handle("/", middleware.RoleAuthorization(middleware.AuthMiddleware(http.HandlerFunc(handlers.CreateEventHandler)), util.CREATE_EVENT)).Methods("POST")
 }

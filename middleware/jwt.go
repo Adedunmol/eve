@@ -76,9 +76,8 @@ func AuthMiddleware(handler http.Handler) http.Handler {
 		}
 
 		username, err := DecodeToken(tokenString[1])
-		fmt.Println(username)
 		if err != nil || username == "" {
-			util.RespondWithError(w, http.StatusUnauthorized, "Bad token")
+			util.RespondWithError(w, http.StatusUnauthorized, "Bad token or token is expired")
 			return
 		}
 
@@ -158,7 +157,7 @@ func RoleAuthorization(handler http.Handler, perm uint8) http.Handler {
 
 		var role models.Role
 
-		result = database.Database.Db.First(&role, foundUser.ID)
+		result = database.Database.Db.First(&role, foundUser.RoleID)
 
 		if !role.HasPermission(perm) {
 			util.RespondWithError(w, http.StatusForbidden, "Forbidden")
