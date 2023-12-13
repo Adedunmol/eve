@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"eve/database"
 	"eve/models"
 	"eve/util"
 	"fmt"
@@ -19,8 +20,8 @@ type CreateEventDto struct {
 }
 
 func CreateEventHandler(w http.ResponseWriter, r *http.Request) {
-	var event CreateEventDto
-	err := json.NewDecoder(r.Body).Decode(&event)
+	var eventDto CreateEventDto
+	err := json.NewDecoder(r.Body).Decode(&eventDto)
 
 	if _, ok := err.(*json.InvalidUnmarshalError); ok {
 		fmt.Println(err)
@@ -34,10 +35,34 @@ func CreateEventHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var foundUser models.User
-
 	username := r.Context().Value("username")
 
-	fmt.Println(foundUser)
-	fmt.Println(username)
+	var foundUser models.User
+
+	result := database.Database.Db.Where(models.User{Username: username.(string)}).First(&foundUser)
+
+	if result.Error != nil {
+		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "user does not exist", Data: nil, Status: "error"})
+		return
+	}
+
+	event := models.Event{
+		Name:      eventDto.Name,
+		About:     eventDto.About,
+		Tickets:   eventDto.Tickets,
+		Price:     eventDto.Price,
+		Location:  eventDto.Location,
+		Category:  eventDto.Category,
+		Organizer: foundUser,
+	}
+
+	result = database.Database.Db.Create(&event)
+
+	if result.Error != nil {
+		fmt.Println(result.Error)
+		util.RespondWithJSON(w, http.StatusInternalServerError, APIResponse{Message: "error creating event", Data: nil, Status: "error"})
+		return
+	}
+
+	util.RespondWithJSON(w, http.StatusCreated, APIResponse{Message: "", Data: event, Status: "success"})
 }
