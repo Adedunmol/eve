@@ -19,9 +19,9 @@ const TOKEN_EXPIRATION = 15 * time.Minute
 func GenerateToken(username string) (string, error) {
 
 	claims := jwt.MapClaims{
-		"username": username,
-		"exp":      time.Now().Add(TOKEN_EXPIRATION).Unix(),
-		"IssuedAt": time.Now().Unix(),
+		"username":   username,
+		"Expiration": time.Now().Add(TOKEN_EXPIRATION).Unix(),
+		"IssuedAt":   time.Now().Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -86,58 +86,6 @@ func AuthMiddleware(handler http.Handler) http.Handler {
 
 		handler.ServeHTTP(w, newReq)
 
-	})
-}
-
-func AdminRoute(handler http.Handler) http.Handler {
-
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		username := r.Context().Value("username")
-		var foundUser models.User
-
-		result := database.Database.Db.Where(models.User{Username: username.(string)}).First(&foundUser)
-
-		if result.Error != nil {
-			util.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
-			return
-		}
-
-		var role models.Role
-
-		result = database.Database.Db.First(&role, foundUser.ID)
-
-		if !role.HasPermission(util.ADMIN) {
-			util.RespondWithError(w, http.StatusForbidden, "Forbidden")
-			return
-		}
-
-		handler.ServeHTTP(w, r)
-	})
-}
-
-func EventOrganizerRoute(handler http.Handler) http.Handler {
-
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		username := r.Context().Value("username")
-		var foundUser models.User
-
-		result := database.Database.Db.Where(models.User{Username: username.(string)}).First(&foundUser)
-
-		if result.Error != nil {
-			util.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
-			return
-		}
-
-		var role models.Role
-
-		result = database.Database.Db.First(&role, foundUser.ID)
-
-		if !role.HasPermission(util.CREATE_EVENT) {
-			util.RespondWithError(w, http.StatusForbidden, "Forbidden")
-			return
-		}
-
-		handler.ServeHTTP(w, r)
 	})
 }
 
