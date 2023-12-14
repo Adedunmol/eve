@@ -47,13 +47,13 @@ func CreateEventHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	event := models.Event{
-		Name:      eventDto.Name,
-		About:     eventDto.About,
-		Tickets:   eventDto.Tickets,
-		Price:     eventDto.Price,
-		Location:  eventDto.Location,
-		Category:  eventDto.Category,
-		Organizer: foundUser,
+		Name:        eventDto.Name,
+		About:       eventDto.About,
+		Tickets:     eventDto.Tickets,
+		Price:       eventDto.Price,
+		Location:    eventDto.Location,
+		Category:    eventDto.Category,
+		OrganizerID: foundUser.ID,
 	}
 
 	result = database.Database.Db.Create(&event)

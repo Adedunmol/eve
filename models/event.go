@@ -13,5 +13,5 @@ type Event struct {
 	Location string `json:"location"`
 	Category string `json:"category"`
 	// Date      time.Time `json:"date"`
-	Organizer User
+	OrganizerID uint
 }
