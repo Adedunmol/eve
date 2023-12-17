@@ -90,3 +90,33 @@ func GetEventHandler(w http.ResponseWriter, r *http.Request) {
 
 	util.RespondWithJSON(w, http.StatusOK, APIResponse{Message: "", Data: event, Status: "success"})
 }
+
+func DeleteEventHandler(w http.ResponseWriter, r *http.Request) {
+
+	vars := mux.Vars(r)
+
+	if vars["id"] == "" {
+		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "no event id sent in the url param", Data: nil, Status: "error"})
+		return
+	}
+
+	var event models.Event
+
+	result := database.Database.Db.First(&event, vars["id"])
+
+	if result.Error != nil {
+		fmt.Println(result.Error)
+		util.RespondWithJSON(w, http.StatusNotFound, APIResponse{Message: "event not found", Data: nil, Status: "error"})
+		return
+	}
+
+	result = database.Database.Db.Delete(&event)
+
+	if result.Error != nil {
+		fmt.Println(result.Error)
+		util.RespondWithJSON(w, http.StatusNotFound, APIResponse{Message: "error deleting event", Data: nil, Status: "error"})
+		return
+	}
+
+	util.RespondWithJSON(w, http.StatusOK, APIResponse{Message: "", Data: event, Status: "success"})
+}
