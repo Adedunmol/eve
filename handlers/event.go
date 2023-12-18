@@ -128,3 +128,55 @@ func GetAllEventsHandler(w http.ResponseWriter, r *http.Request) {
 
 	util.RespondWithJSON(w, http.StatusOK, APIResponse{Message: "", Data: events, Status: "success"})
 }
+
+func UpdateEventHandler(w http.ResponseWriter, r *http.Request) {
+
+	vars := mux.Vars(r)
+
+	if vars["id"] == "" {
+		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "no event id sent in the url param", Data: nil, Status: "error"})
+		return
+	}
+
+	var event models.Event
+
+	result := database.Database.Db.First(&event, vars["id"])
+
+	if result.Error != nil {
+		fmt.Println(result.Error)
+		util.RespondWithJSON(w, http.StatusNotFound, APIResponse{Message: "event not found", Data: nil, Status: "success"})
+		return
+	}
+
+	var eventDto CreateEventDto
+	err := json.NewDecoder(r.Body).Decode(&eventDto)
+
+	if _, ok := err.(*json.InvalidUnmarshalError); ok {
+		fmt.Println(err)
+		util.RespondWithError(w, http.StatusInternalServerError, "Unable to format the request body")
+		return
+	}
+
+	if err != nil {
+		fmt.Println(err)
+		util.RespondWithError(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	result = database.Database.Db.Model(&event).Updates(models.Event{
+		Name:     eventDto.Name,
+		About:    eventDto.About,
+		Tickets:  eventDto.Tickets,
+		Price:    eventDto.Price,
+		Location: eventDto.Location,
+		Category: eventDto.Category,
+	})
+
+	if result.Error != nil {
+		fmt.Println(err)
+		util.RespondWithError(w, http.StatusInternalServerError, "Error updating event")
+		return
+	}
+
+	util.RespondWithJSON(w, http.StatusOK, APIResponse{Message: "", Data: event, Status: "success"})
+}
