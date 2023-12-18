@@ -120,3 +120,11 @@ func DeleteEventHandler(w http.ResponseWriter, r *http.Request) {
 
 	util.RespondWithJSON(w, http.StatusOK, APIResponse{Message: "", Data: event, Status: "success"})
 }
+
+func GetAllEventsHandler(w http.ResponseWriter, r *http.Request) {
+	var events []models.Event
+
+	database.Database.Db.Where("deleted_at = null").Find(&events)
+
+	util.RespondWithJSON(w, http.StatusOK, APIResponse{Message: "", Data: events, Status: "success"})
+}
