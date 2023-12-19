@@ -21,6 +21,10 @@ type CreateEventDto struct {
 	// Date     time.Time `json:"date"`
 }
 
+type ReserveSpot struct {
+	Tickets int `json:"tickets"`
+}
+
 func CreateEventHandler(w http.ResponseWriter, r *http.Request) {
 	var eventDto CreateEventDto
 	err := json.NewDecoder(r.Body).Decode(&eventDto)
@@ -179,4 +183,85 @@ func UpdateEventHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	util.RespondWithJSON(w, http.StatusOK, APIResponse{Message: "", Data: event, Status: "success"})
+}
+
+func ReserveEvent(w http.ResponseWriter, r *http.Request) {
+
+	vars := mux.Vars(r)
+
+	if vars["id"] == "" {
+		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "no event id sent in the url param", Data: nil, Status: "error"})
+		return
+	}
+
+	var event models.Event
+
+	result := database.Database.Db.First(&event, vars["id"])
+
+	if result.Error != nil {
+		fmt.Println(result.Error)
+		util.RespondWithJSON(w, http.StatusNotFound, APIResponse{Message: "event not found", Data: nil, Status: "error"})
+		return
+	}
+
+	if event.Tickets == 0 {
+		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "event sold out", Data: nil, Status: "success"})
+		return
+	}
+
+	var eventDto ReserveSpot
+	err := json.NewDecoder(r.Body).Decode(&eventDto)
+
+	if _, ok := err.(*json.InvalidUnmarshalError); ok {
+		fmt.Println(err)
+		util.RespondWithError(w, http.StatusInternalServerError, "Unable to format the request body")
+		return
+	}
+
+	if err != nil {
+		fmt.Println(err)
+		util.RespondWithError(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	if eventDto.Tickets > eventDto.Tickets {
+		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "tickets not enough", Data: nil, Status: "success"})
+		return
+	}
+
+	event.Tickets -= eventDto.Tickets
+
+	result = database.Database.Db.Model(&event).Update("tickets", event.Tickets)
+
+	if result.Error != nil {
+		fmt.Println(err)
+		util.RespondWithError(w, http.StatusInternalServerError, "Error updating event")
+		return
+	}
+
+	username := r.Context().Value("username")
+
+	var foundUser models.User
+
+	result = database.Database.Db.Where(models.User{Username: username.(string)}).First(&foundUser)
+
+	if result.Error != nil {
+		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "user does not exist", Data: nil, Status: "error"})
+		return
+	}
+
+	purchase := models.Purchase{
+		EventID: uint8(event.ID),
+		BuyerID: uint8(foundUser.ID),
+	}
+
+	result = database.Database.Db.Create(&purchase)
+
+	if result.Error != nil {
+		fmt.Println(result.Error)
+		util.RespondWithJSON(w, http.StatusInternalServerError, APIResponse{Message: "error creating a purchase", Data: nil, Status: "error"})
+		return
+	}
+
+	util.RespondWithJSON(w, http.StatusCreated, APIResponse{Message: "", Data: event, Status: "success"})
 }

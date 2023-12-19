@@ -14,4 +14,5 @@ type Event struct {
 	Category string `json:"category"`
 	// Date      time.Time `json:"date"`
 	OrganizerID uint
+	Purchases   []Purchase `gorm:"foreignKey:EventID"`
 }

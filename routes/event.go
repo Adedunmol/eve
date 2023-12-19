@@ -18,4 +18,5 @@ func EventRoutes(r *mux.Router) {
 	u.Handle("/{id}", middleware.AuthMiddleware(middleware.RoleAuthorization(http.HandlerFunc(handlers.UpdateEventHandler), util.MODIFY_EVENT))).Methods("PATCH")
 	u.Handle("/{id}", middleware.AuthMiddleware(middleware.RoleAuthorization(http.HandlerFunc(handlers.DeleteEventHandler), util.DELETE_EVENT))).Methods("DELETE")
 
+	u.Handle("/{id}/reserve", middleware.AuthMiddleware(http.HandlerFunc(handlers.ReserveEvent))).Methods("POST")
 }
