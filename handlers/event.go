@@ -229,16 +229,6 @@ func ReserveEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	event.Tickets -= eventDto.Tickets
-
-	result = database.Database.Db.Model(&event).Update("tickets", event.Tickets)
-
-	if result.Error != nil {
-		fmt.Println(err)
-		util.RespondWithError(w, http.StatusInternalServerError, "Error updating event")
-		return
-	}
-
 	username := r.Context().Value("username")
 
 	var foundUser models.User
@@ -263,5 +253,15 @@ func ReserveEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	util.RespondWithJSON(w, http.StatusCreated, APIResponse{Message: "", Data: event, Status: "success"})
+	event.Tickets -= eventDto.Tickets
+
+	result = database.Database.Db.Model(&event).Update("tickets", event.Tickets)
+
+	if result.Error != nil {
+		fmt.Println(err)
+		util.RespondWithError(w, http.StatusInternalServerError, "Error updating event")
+		return
+	}
+
+	util.RespondWithJSON(w, http.StatusCreated, APIResponse{Message: "", Data: purchase, Status: "success"})
 }
