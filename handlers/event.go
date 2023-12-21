@@ -106,7 +106,7 @@ func DeleteEventHandler(w http.ResponseWriter, r *http.Request) {
 
 	var event models.Event
 
-	result := database.Database.Db.First(&event, vars["id"])
+	result := database.Database.Db.Where("deleted_at is null").First(&event, vars["id"])
 
 	if result.Error != nil {
 		fmt.Println(result.Error)
@@ -128,7 +128,7 @@ func DeleteEventHandler(w http.ResponseWriter, r *http.Request) {
 func GetAllEventsHandler(w http.ResponseWriter, r *http.Request) {
 	var events []models.Event
 
-	database.Database.Db.Where("deleted_at = null").Find(&events)
+	database.Database.Db.Where("deleted_at is null").Find(&events)
 
 	util.RespondWithJSON(w, http.StatusOK, APIResponse{Message: "", Data: events, Status: "success"})
 }
@@ -144,7 +144,7 @@ func UpdateEventHandler(w http.ResponseWriter, r *http.Request) {
 
 	var event models.Event
 
-	result := database.Database.Db.First(&event, vars["id"])
+	result := database.Database.Db.Where("deleted_at is null").First(&event, vars["id"])
 
 	if result.Error != nil {
 		fmt.Println(result.Error)
@@ -196,7 +196,7 @@ func ReserveEvent(w http.ResponseWriter, r *http.Request) {
 
 	var event models.Event
 
-	result := database.Database.Db.First(&event, vars["id"])
+	result := database.Database.Db.Where("deleted_at is null").First(&event, vars["id"])
 
 	if result.Error != nil {
 		fmt.Println(result.Error)
