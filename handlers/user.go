@@ -17,6 +17,7 @@ import (
 type User struct {
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
+	Email     string `json:"email"`
 	Username  string `json:"username"`
 	Password  string `json:"password"`
 }
@@ -79,7 +80,14 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user := models.User{FirstName: userDto.FirstName, LastName: userDto.LastName, Password: string(hashedPassword), Username: userDto.Username, RoleID: role.ID}
+	user := models.User{
+		FirstName: userDto.FirstName,
+		LastName:  userDto.LastName,
+		Email:     userDto.Email,
+		Password:  string(hashedPassword),
+		Username:  userDto.Username,
+		RoleID:    role.ID,
+	}
 
 	result = database.Database.Db.Create(&user)
 

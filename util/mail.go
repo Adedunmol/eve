@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"net/smtp"
 	"os"
+	"sync"
 )
 
-func SendMail(to []string, message []byte) {
+func SendMail(to []string, message []byte, wg *sync.WaitGroup) {
+	defer wg.Done()
 	from := os.Getenv("EMAIL_USERNAME")
 	password := os.Getenv("EMAIL_PASSWORD")
 
