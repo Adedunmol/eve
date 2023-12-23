@@ -267,7 +267,7 @@ func ReserveEvent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	wg.Add(1)
-	go util.SendMail([]string{foundUser.Email}, []byte("Testing"), wg)
+	go util.SendMailV2(foundUser.Email, wg)
 
 	util.RespondWithJSON(w, http.StatusCreated, APIResponse{Message: "", Data: purchase, Status: "success"})
 
