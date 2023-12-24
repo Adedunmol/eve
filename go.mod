@@ -6,6 +6,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.1.0
 	github.com/gorilla/mux v1.8.1
 	github.com/joho/godotenv v1.5.1
+	github.com/jordan-wright/email v4.0.1-0.20210109023952-943e75fe5223+incompatible
 	github.com/lib/pq v1.10.9
 	golang.org/x/crypto v0.16.0
 	gopkg.in/mail.v2 v2.3.1

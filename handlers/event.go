@@ -7,7 +7,6 @@ import (
 	"eve/util"
 	"fmt"
 	"net/http"
-	"sync"
 
 	"github.com/gorilla/mux"
 )
@@ -188,7 +187,7 @@ func UpdateEventHandler(w http.ResponseWriter, r *http.Request) {
 
 func ReserveEvent(w http.ResponseWriter, r *http.Request) {
 
-	wg := new(sync.WaitGroup)
+	// wg := new(sync.WaitGroup)
 
 	vars := mux.Vars(r)
 
@@ -266,10 +265,10 @@ func ReserveEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	wg.Add(1)
-	go util.SendMailV2(foundUser.Email, wg)
+	// wg.Add(1)
+	util.SendMailV3([]string{foundUser.Email})
 
 	util.RespondWithJSON(w, http.StatusCreated, APIResponse{Message: "", Data: purchase, Status: "success"})
 
-	wg.Wait()
+	// wg.Wait()
 }

@@ -7,6 +7,7 @@ import (
 	"os"
 	"sync"
 
+	"github.com/jordan-wright/email"
 	gomail "gopkg.in/mail.v2"
 )
 
@@ -61,9 +62,38 @@ func SendMailV2(to string, wg *sync.WaitGroup) {
 	// In production this should be set to false.
 	d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 
+	fmt.Println("working")
+
 	// Now send E-Mail
 	if err := d.DialAndSend(m); err != nil {
 		fmt.Println(err)
+		panic(err)
+	}
+
+	return
+}
+
+func SendMailV3(to []string) {
+	e := email.NewEmail()
+
+	e.From = fmt.Sprintf("%s <%s>", "Adedunmola", os.Getenv("EMAIL_USERNAME"))
+	e.Subject = "testing"
+	e.HTML = []byte("testing")
+	e.To = to
+
+	smtpAuth := smtp.PlainAuth("", os.Getenv("EMAIL_USERNAME"), os.Getenv("EMAIL_PASSWORD"), "smtp.gmail.com")
+
+	fmt.Println(os.Getenv("EMAIL_USERNAME"))
+	fmt.Println(os.Getenv("EMAIL_PASSWORD"))
+	fmt.Println(smtpAuth)
+	fmt.Println(to)
+
+	err := e.Send("smtp.gmail.com:587", smtpAuth)
+
+	fmt.Println("working")
+
+	if err != nil {
+		fmt.Println("err hand", err)
 		panic(err)
 	}
 
