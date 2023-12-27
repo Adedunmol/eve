@@ -8,16 +8,26 @@ import (
 	"sync"
 )
 
-func SendMail(to string, message []byte, wg *sync.WaitGroup) {
+func SendMail(to string, subject string, message []byte, wg *sync.WaitGroup) {
 	defer wg.Done()
 	// https://stackoverflow.com/questions/57063411/go-smtp-unable-to-send-email-through-gmail-getting-eof
 	from := os.Getenv("EMAIL_USERNAME")
 	password := os.Getenv("EMAIL_PASSWORD")
 
-	fmt.Println(from, password)
-
 	smtpHost := "smtp.gmail.com"
 	smtpPort := "465"
+
+	headers := make(map[string]string)
+	headers["From"] = from
+	headers["To"] = to
+	headers["Subject"] = subject
+
+	// Setup message
+	msg := ""
+	for k, v := range headers {
+		msg += fmt.Sprintf("%s: %s\r\n", k, v)
+	}
+	msg += "\r\n" + string(message)
 
 	auth := smtp.PlainAuth("", from, password, smtpHost)
 
@@ -57,7 +67,7 @@ func SendMail(to string, message []byte, wg *sync.WaitGroup) {
 		fmt.Println(err)
 	}
 
-	_, err = w.Write(message)
+	_, err = w.Write([]byte(msg))
 	if err != nil {
 		fmt.Println(err)
 	}

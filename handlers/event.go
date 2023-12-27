@@ -266,8 +266,14 @@ func ReserveEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	message := fmt.Sprintf(`
+You just purchased %d ticket(s) to attend %s
+
+If you didn't make the purchase, kindly ignore
+	`, eventDto.Tickets, event.Name)
+
 	wg.Add(1)
-	go util.SendMail(foundUser.Email, []byte("hello there"), wg)
+	go util.SendMail(foundUser.Email, "Tickect purchase", []byte(message), wg)
 
 	util.RespondWithJSON(w, http.StatusCreated, APIResponse{Message: "", Data: purchase, Status: "success"})
 
