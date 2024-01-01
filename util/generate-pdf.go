@@ -1,6 +1,7 @@
 package util
 
 import (
+	"errors"
 	"eve/database"
 	"eve/models"
 	"fmt"
@@ -13,10 +14,10 @@ func GeneratePdf(event models.Event) error {
 
 	var organizer models.User
 
-	err := database.Database.Db.First(&organizer, event.OrganizerID)
+	result := database.Database.Db.First(&organizer, event.OrganizerID)
 
-	if err != nil {
-		return err.Error
+	if result.Error != nil {
+		return errors.New("no user found with this id")
 	}
 
 	doc, _ := generator.New(generator.Invoice, &generator.Options{
@@ -74,16 +75,16 @@ func GeneratePdf(event models.Event) error {
 		},
 	})
 
-	// pdf, err = doc.Build()
-	// if err != nil {
-	// 	return err.Error
-	// }
+	pdf, err := doc.Build()
+	if err != nil {
+		return err
+	}
 
-	// err = pdf.OutputFileAndClose("out.pdf")
+	err = pdf.OutputFileAndClose("out.pdf")
 
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
