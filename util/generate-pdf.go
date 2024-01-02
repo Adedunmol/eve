@@ -5,19 +5,21 @@ import (
 	"eve/database"
 	"eve/models"
 	"fmt"
+	"sync"
 	"time"
 
 	generator "github.com/angelodlfrtr/go-invoice-generator"
 )
 
-func GeneratePdf(event models.Event) error {
+func GeneratePdf(event models.Event, user models.User, fileStr *string, mux *sync.Mutex, wg *sync.WaitGroup) (string, error) {
+	defer wg.Done()
 
 	var organizer models.User
 
 	result := database.Database.Db.First(&organizer, event.OrganizerID)
 
 	if result.Error != nil {
-		return errors.New("no user found with this id")
+		return "", errors.New("no user found with this id")
 	}
 
 	doc, _ := generator.New(generator.Invoice, &generator.Options{
@@ -77,14 +79,15 @@ func GeneratePdf(event models.Event) error {
 
 	pdf, err := doc.Build()
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	err = pdf.OutputFileAndClose("out.pdf")
+	*fileStr = fmt.Sprintf("%s.pdf", user.Username)
+	err = pdf.OutputFileAndClose(*fileStr)
 
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return nil
+	return *fileStr, nil
 }

@@ -7,6 +7,7 @@ import (
 	"eve/util"
 	"fmt"
 	"net/http"
+	"os"
 	"sync"
 
 	"github.com/gorilla/mux"
@@ -272,10 +273,23 @@ You just purchased %d ticket(s) to attend %s
 If you didn't make the purchase, kindly ignore
 	`, eventDto.Tickets, event.Name)
 
-	wg.Add(1)
+	mux := &sync.Mutex{}
+
+	fileStr := ""
+
+	wg.Add(2)
+	go util.GeneratePdf(event, foundUser, &fileStr, mux, wg)
+
 	go util.SendMail(foundUser.Email, "Tickect purchase", []byte(message), wg)
 
 	util.RespondWithJSON(w, http.StatusCreated, APIResponse{Message: "", Data: purchase, Status: "success"})
 
 	wg.Wait()
+
+	err = os.Remove(fileStr)
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 }
